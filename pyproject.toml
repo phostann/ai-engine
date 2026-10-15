@@ -1,0 +1,41 @@
+[project]
+name = "ai-engine"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "phos", email = "752383950@qq.com" }
+]
+requires-python = ">=3.14"
+dependencies = [
+    "pydantic-settings>=2.15.0",
+]
+
+[project.scripts]
+ai-engine = "ai_engine:main"
+
+[build-system]
+requires = ["uv_build>=0.13.0,<0.14.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "ruff>=0.17.0",
+]
+
+[tool.ruff]
+# 行宽限制与目标 Python 版本
+line-length = 100
+target-version = "py314"
+src = ["src"]
+
+[tool.ruff.lint]
+# 开启核心规则集
+# E/W: pycodestyle, F: Pyflakes, I: isort(自动排 import), B: flake8-bugbear, UP: pyupgrade(强制现代语法)
+select = ["E", "W", "F", "I", "B", "UP"]
+ignore = []
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
