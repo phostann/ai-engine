@@ -16,7 +16,7 @@ async def async_main() -> None:
     # 1. 使用 async with 自动管理连接池生命周期
     async with llm_session_scope(settings.llm_model) as client:
         # 2. 调用带 @async_timer 和 @async_retry 装饰器的函数
-        await check_model_health(client)
+        await check_model_health(client, simulate_fail=True)
 
         # 3. 场景 A：完整消费异步生成器流（使用 async for）
         print("\n--- 场景 A：完整流式输出 ---")
