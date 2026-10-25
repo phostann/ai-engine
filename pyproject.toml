@@ -8,9 +8,14 @@ authors = [
 ]
 requires-python = ">=3.12"
 dependencies = [
+    "fastapi>=0.115.0",
     "httpx>=0.28.1",
     "pydantic>=2.14.1",
     "pydantic-settings==2.16.1",
+    "sse-starlette>=2.1.0",
+    "tiktoken>=0.14.0",
+    "tokenizers>=0.23.3",
+    "uvicorn[standard]>=0.30.0",
 ]
 
 [project.scripts]
