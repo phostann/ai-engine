@@ -4,8 +4,6 @@ from typing import Any
 
 import httpx
 
-from types import TracebackType
-
 
 class ProductionHttpClient:
     """生产级异步 HTTP 客户端：连接池复用 + 非对称超时 + Full-Jitter 退避重试"""

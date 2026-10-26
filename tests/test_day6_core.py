@@ -73,7 +73,7 @@ async def test_native_llm_client_streaming_with_mock() -> None:
     )
 
     async with ProductionHttpClient(base_url=settings.llm_base_url) as http_client:
-        http_client.client._mounts.clear() # 避免走代理
+        http_client.client._mounts.clear()  # 避免走代理
         http_client.client._transport = httpx.MockTransport(mock_sse_handler)
         client = NativeLLMClient(settings=settings, http_client=http_client)
 

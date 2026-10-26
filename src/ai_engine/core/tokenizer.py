@@ -57,13 +57,13 @@ class TokenBudgetGuard:
         在发起网络请求前本地校验, 若上下文总和超出最大窗口，则提前报错拦截
         返回当前 Prompt 消耗的 Token 数
         """
-        prompt_tokens = self.count_chat_tokens(messages)
+        # prompt_tokens = self.count_chat_tokens(messages)
 
         # TODO 3: 校验 prompt_tokens + max_completion_tokens 是否超过 self.max_context_limit
         # 如果超出，抛出 ValueError 并打印当前 token 与限制值
-        if prompt_tokens + max_completion_tokens > self.max_context_limit:
-            raise ValueError(
-                f"上下文 Token 超限: 当前 Prompt ({prompt_tokens}) + "
-                f"预期生成 ({max_completion_tokens}) > 最大限制 ({self.max_context_limit})"
-            )
-        return prompt_tokens
+        # if prompt_tokens + max_completion_tokens > self.max_context_limit:
+        #     raise ValueError(
+        #         f"上下文 Token 超限: 当前 Prompt ({prompt_tokens}) + "
+        #         f"预期生成 ({max_completion_tokens}) > 最大限制 ({self.max_context_limit})"
+        #     )
+        pass

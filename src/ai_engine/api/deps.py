@@ -6,6 +6,7 @@ from fastapi import Depends, Header, HTTPException, Request, status
 
 from ai_engine.core.context import _trace_id_var
 from ai_engine.core.http_client import ProductionHttpClient
+from ai_engine.services.llm_client import NativeLLMClient
 
 
 async def get_http_client(request: Request) -> ProductionHttpClient:
@@ -38,6 +39,18 @@ async def get_request_trace_id(
         _trace_id_var.reset(token)
 
 
+async def get_llm_client(request: Request) -> NativeLLMClient:
+    """从 app.state 获取已经装配好的 NativeLLMClient 单例"""
+    client: NativeLLMClient | None = getattr(request.app.state, "llm_client", None)
+    if client is None:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="NativeLLMClient 尚未在 lifespan 中初始化",
+        )
+    return client
+
+
 # 组合类型别名（现代 Python 声明风格）
 HttpClientDep = Annotated[ProductionHttpClient, Depends(get_http_client, use_cache=True)]
 TraceIdDep = Annotated[str, Depends(get_request_trace_id, use_cache=True)]
+LLMClientDep = Annotated[NativeLLMClient, Depends(get_llm_client, use_cache=True)]
