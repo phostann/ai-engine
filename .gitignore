@@ -14,3 +14,6 @@ wheels/
 
 # idea
 .idea
+
+# 本地缓存的模型分词器
+.cache/

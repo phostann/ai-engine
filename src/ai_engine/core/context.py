@@ -1,7 +1,11 @@
 import asyncio
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from contextvars import ContextVar
 from dataclasses import dataclass
+
+# 全链路协程安全的 trace_id 变量（对标 Spring MDC / ThreadLocal，但单线程协程安全）
+_trace_id_var: ContextVar[str] = ContextVar("trace_id", default="system")
 
 
 @dataclass

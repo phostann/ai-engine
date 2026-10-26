@@ -70,6 +70,7 @@ async def test_http_client_jitter_retry_with_mock_transport() -> None:
         return httpx.Response(200, json={"data": "success"})
 
     async with ProductionHttpClient(base_url="https://mock.ai") as client:
+        client.client._mounts.clear()  # 避免走代理
         # 挂载内存级 MockTransport 避免发出真实网络请求
         client.client._transport = httpx.MockTransport(mock_handler)
         resp = await client.request_with_jitter_retry(
