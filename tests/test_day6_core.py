@@ -2,6 +2,7 @@ import json
 
 import httpx
 import pytest
+from pydantic import SecretStr
 
 from ai_engine.core.config import Settings
 from ai_engine.core.http_client import ProductionHttpClient
@@ -67,7 +68,7 @@ async def test_native_llm_client_streaming_with_mock() -> None:
         )
 
     settings = Settings(
-        llm_api_key="sk-test",
+        llm_api_key=SecretStr("sk-test"),
         llm_base_url="https://mock.api.com/v1",
         llm_model="gpt-4o-mini",
     )

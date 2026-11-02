@@ -1,5 +1,6 @@
 import json
 from collections.abc import AsyncGenerator
+from contextlib import aclosing
 
 from fastapi import APIRouter, Request
 from pydantic import BaseModel, Field
@@ -48,22 +49,23 @@ async def generate_gateway_chat_stream(
 
     emitted_tokens = 0
     try:
-        # TODO 2: 调用 llm_client.chat_stream(messages, model=body.model) 异步消费数据流
-        async for token in llm_client.chat_stream(messages, model=body.model):
-            # TODO 3: 检测客户端是否主动中断 (await request.is_disconnected())
-            if await request.is_disconnected():
-                logger.warning(f"客户端主动终止连接，推流提前中止 (已吐字: {emitted_tokens})")
-                break
+        async with aclosing(llm_client.chat_stream(messages, model=body.model)) as token_stream:
+            # TODO 2: 调用 llm_client.chat_stream(messages, model=body.model) 异步消费数据流
+            async for token in token_stream:
+                # TODO 3: 检测客户端是否主动中断 (await request.is_disconnected())
+                if await request.is_disconnected():
+                    logger.warning(f"客户端主动终止连接，推流提前中止 (已吐字: {emitted_tokens})")
+                    break
 
-            emitted_tokens += 1
-            yield {
-                "event": "message",
-                "id": str(emitted_tokens),
-                "data": json.dumps({"content": token}, ensure_ascii=False),
-            }
+                emitted_tokens += 1
+                yield {
+                    "event": "message",
+                    "id": str(emitted_tokens),
+                    "data": json.dumps({"content": token}, ensure_ascii=False),
+                }
 
-        # 正常结束标记帧
-        yield {"event": "done", "data": "[DONE]"}
+            # 正常结束标记帧
+            yield {"event": "done", "data": "[DONE]"}
 
     except ValueError as val_err:
         # 命中 Day 6 的 Token 预算超限拦截

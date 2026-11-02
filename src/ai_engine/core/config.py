@@ -1,7 +1,7 @@
 from functools import lru_cache
 from typing import Literal
 
-from pydantic import Field
+from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -16,19 +16,22 @@ class Settings(BaseSettings):
     app_name: str = "AI-Engine"
     app_env: Literal["development", "staging", "production"] = "development"
     debug: bool = False
+    host: str = Field(default="127.0.0.1", description="FastAPI 监听地址")
+    port: int = Field(default=8000, ge=1, le=65535, description="FastAPI 监听端口")
 
     # 大模型基础配置（Field(...) 表示必填，若配置文件未配置，则启动报错）
-    llm_api_key: str = Field(..., description="大模型 API 密钥")
+    llm_api_key: SecretStr = Field(..., description="大模型 API 密钥")
     llm_base_url: str = Field(default="https://api.openai.com/v1", description="大模型接口地址")
     llm_model: str = Field(default="gpt-4o-mini", description="模型名称")
 
     @property
     def masked_api_key(self) -> str:
         """脱敏 API Key"""
-        if len(self.llm_api_key) <= 8:
+        raw_key = self.llm_api_key.get_secret_value()
+        if len(raw_key) <= 8:
             return "***"
 
-        return f"{self.llm_api_key[:4]}...{self.llm_api_key[-4:]}"
+        return f"{raw_key[:4]}...{raw_key[-4:]}"
 
 
 @lru_cache

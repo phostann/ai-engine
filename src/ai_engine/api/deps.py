@@ -5,19 +5,7 @@ from typing import Annotated
 from fastapi import Depends, Header, HTTPException, Request, status
 
 from ai_engine.core.context import _trace_id_var
-from ai_engine.core.http_client import ProductionHttpClient
 from ai_engine.services.llm_client import NativeLLMClient
-
-
-async def get_http_client(request: Request) -> ProductionHttpClient:
-    """从 app.state 提取已经初始化的全局连接池单例"""
-    client: ProductionHttpClient | None = getattr(request.app.state, "http_client", None)
-    if client is None:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="全局 HTTP 客户端连接池未初始化",
-        )
-    return client
 
 
 async def get_request_trace_id(
@@ -51,6 +39,5 @@ async def get_llm_client(request: Request) -> NativeLLMClient:
 
 
 # 组合类型别名（现代 Python 声明风格）
-HttpClientDep = Annotated[ProductionHttpClient, Depends(get_http_client, use_cache=True)]
 TraceIdDep = Annotated[str, Depends(get_request_trace_id, use_cache=True)]
 LLMClientDep = Annotated[NativeLLMClient, Depends(get_llm_client, use_cache=True)]

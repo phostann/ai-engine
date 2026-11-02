@@ -41,7 +41,7 @@ class NativeLLMClient:
             self.token_guard.validate_budget_or_raise(messages, max_completion_tokens=max_tokens)
 
         headers = {
-            "Authorization": f"Bearer {self.settings.llm_api_key}",
+            "Authorization": f"Bearer {self.settings.llm_api_key.get_secret_value()}",
             "Content-Type": "application/json",
         }
 
