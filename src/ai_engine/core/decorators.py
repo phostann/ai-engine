@@ -2,11 +2,9 @@ import asyncio
 import functools
 import time
 from collections.abc import Callable, Coroutine
-from typing import Any, ParamSpec, TypeVar
+from typing import Any
 
-# ParamSpec 和 TypeVar 用于在装饰器中 100% 保留原函数的入参和返回值类型提示
-P = ParamSpec("P")
-R = TypeVar("R")
+# PEP 695 泛型参数用于在装饰器中保留原函数的入参和返回值类型提示
 
 
 def async_timer[**P, R](
@@ -27,7 +25,7 @@ def async_timer[**P, R](
     return wrapper
 
 
-def async_retry(max_retries: int = 3, base_delay: float = 0.5):
+def async_retry[**P, R](max_retries: int = 3, base_delay: float = 0.5):
     """带参数的装饰器：用于大模型 API 偶发超市或触发 RateLimit 时的指数退避重试"""
 
     def decorator(
