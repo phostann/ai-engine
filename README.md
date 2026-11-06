@@ -34,7 +34,10 @@ uv run ruff format --check .
 
 ## 学习文档
 
-- [Python / FastAPI 项目知识地图](docs/python-fastapi-knowledge-map.md)
+- [项目知识总纲](docs/project-knowledge-map.md)
 
-该文档按知识点整理了项目涉及的类型系统、装饰器、上下文管理、asyncio、
-FastAPI、Pydantic、HTTPX 和异步测试，并记录了当前代码的改进方向。
+只记录各知识点的学习进度（未开始 / 进行中 / 已完成）与对应课程文档，不重复课程内容。
+
+- 课程原文：`docs/lessons/NN-*.md`
+
+每次课程的讲解、考题、作答与批改原文，按序号归档。
