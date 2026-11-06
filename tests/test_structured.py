@@ -1,7 +1,7 @@
 """Tests for structured outputs and self-healing loop"""
 
+
 import pytest
-from typing import Optional
 from pydantic import BaseModel, Field, field_validator
 
 from ai_engine.core.exceptions import (
@@ -9,7 +9,6 @@ from ai_engine.core.exceptions import (
     SelfHealingExhaustedError,
     TokenTruncationError,
 )
-
 from ai_engine.core.schema_compiler import StrictSchemaCompiler
 from ai_engine.core.structured import StructuredOutputEngine
 
@@ -26,7 +25,7 @@ class UserProfile(BaseModel):
     name: str = Field(description="Full name")
     age: int = Field(ge=0, le=150)
     email: str
-    address: Optional[UserAddress] = None
+    address: UserAddress | None = None
     tags: list[str] = Field(default_factory=list)
 
     @field_validator("email")
@@ -144,7 +143,7 @@ async def test_self_healing_on_semantic_validation_failure():
 
 @pytest.mark.asyncio
 async def test_truncation_detection_and_fast_fail():
-    """破坏性实验 2：检测物理截断（finish_reason='length'），应立即熔断抛出 TokenTruncationError。"""
+    """破坏性实验 2：检测物理截断（finish_reason='length'），应立即熔断抛 TokenTruncationError。"""
     truncated_json = '{"name": "Charlie", "age": 40, "email": "charlie@com'
     client = MockLLMClient(
         [{"choices": [{"message": {"content": truncated_json}, "finish_reason": "length"}]}]
@@ -185,3 +184,30 @@ async def test_model_refusal_fast_fail():
         )
 
     assert "Cannot process copyrighted data." in str(exc_info.value)
+
+
+@pytest.mark.asyncio
+async def test_self_healing_exhausted_carries_context():
+    """破坏性实验 4：连续非法输出耗尽预算，必须抛出自愈熔断异常并携带上下文。"""
+    invalid_json = (
+        '{"name": "Eve", "age": 20, "email": "eve@gmail.com", "address": null, "tags": []}'
+    )
+    client = MockLLMClient(
+        [{"choices": [{"message": {"content": invalid_json}, "finish_reason": "stop"}]}]
+        * 5
+    )
+
+    engine = StructuredOutputEngine(client=client, max_heal_attempts=2)
+
+    with pytest.raises(SelfHealingExhaustedError) as exc_info:
+        await engine.extract(
+            schema_cls=UserProfile,
+            system_prompt="Extract user.",
+            user_prompt="Eve, 20, eve@gmail.com",
+        )
+
+    # 语义钉子：max_heal_attempts 是"重试次数"，所以总调用次数 = attempts + 1
+    assert exc_info.value.attempts == 3
+    assert client.call_count == 3
+    # 结构化错误必须保留字段定位，供调用方或其他策略消费
+    assert exc_info.value.last_errors[0]["loc"] == "email"
