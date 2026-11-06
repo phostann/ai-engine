@@ -76,9 +76,9 @@ async def generate_gateway_chat_stream(
         }
         yield {"event": "done", "data": "[DONE]"}
 
-    except Exception as exc:
+    except Exception:
         # TODO 4: 捕获网络超时、429 等中途未决异常，优雅下发 error 帧而非造成 HTTP 500 崩溃
-        logger.exception(f"流式推流中途发生不可逆异常: {exc}")
+        logger.exception("流式推流中途发生不可逆异常")
         yield {
             "event": "error",
             "data": json.dumps(

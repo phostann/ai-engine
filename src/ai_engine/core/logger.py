@@ -8,7 +8,7 @@ from ai_engine.core.context import _trace_id_var
 class TraceIdFilter(logging.Filter):
     """从协程上下文中提取 trace_id  注入到 LogRecord"""
 
-    def filter(self, record: LogRecord) -> bool | LogRecord:
+    def filter(self, record: LogRecord) -> bool:
         record.trace_id = _trace_id_var.get("system")
         return True
 
