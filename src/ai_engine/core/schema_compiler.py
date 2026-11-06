@@ -1,6 +1,7 @@
 """Transformers Pydantic Models into OpenAI Strict-Mode compatible JSON Schemas."""
 
-from typing import Any, Type
+from typing import Any
+
 from pydantic import BaseModel
 
 
@@ -8,7 +9,7 @@ class StrictSchemaCompiler:
     """Compiles Pydantic models into OpenAI Strict-Mode compatible JSON Schemas."""
 
     @classmethod
-    def compile(cls, model: Type[BaseModel]) -> dict[str, Any]:
+    def compile(cls, model: type[BaseModel]) -> dict[str, Any]:
         """Convert a Pydantic model class to an OpenAI strict response_format dict."""
         schema = model.model_json_schema()
         clean_schema = cls._make_strict(schema)

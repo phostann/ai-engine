@@ -2,8 +2,8 @@
 
 import json
 import logging
-
 from typing import Any, Protocol
+
 from pydantic import BaseModel, ValidationError
 
 from ai_engine.core.exceptions import (
@@ -11,7 +11,6 @@ from ai_engine.core.exceptions import (
     SelfHealingExhaustedError,
     TokenTruncationError,
 )
-
 from ai_engine.core.schema_compiler import StrictSchemaCompiler
 
 logger = logging.getLogger(__name__)
@@ -139,7 +138,8 @@ class StructuredOutputEngine:
         )
 
         return (
-            "CRITICAL: The previous JSON output failed validation against the required schema/business rules.\n"
+            "CRITICAL: The previous JSON output failed validation against the required "
+            "schema/business rules.\n"
             "Issues detected:\n"
             f"{formatted_issues}\n"
             "Please fix the errors above and return the corrected, complete JSON object."
