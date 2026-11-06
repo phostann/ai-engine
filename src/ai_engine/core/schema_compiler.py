@@ -1,35 +1,35 @@
-"""Transformers Pydantic Models into OpenAI Strict-Mode compatible JSON Schemes."""
+"""Transformers Pydantic Models into OpenAI Strict-Mode compatible JSON Schemas."""
 
 from typing import Any, Type
 from pydantic import BaseModel
 
 
-class StrictSchemeCompiler:
-    """Compiles Pydantic models into OpenAI Strict-Mode compatible JSON Schemes."""
+class StrictSchemaCompiler:
+    """Compiles Pydantic models into OpenAI Strict-Mode compatible JSON Schemas."""
 
     @classmethod
     def compile(cls, model: Type[BaseModel]) -> dict[str, Any]:
         """Convert a Pydantic model class to an OpenAI strict response_format dict."""
-        scheme = model.model_json_schema()
-        clean_scheme = cls._make_strict(scheme)
+        schema = model.model_json_schema()
+        clean_schema = cls._make_strict(schema)
 
         return {
-            "type": "json_scheme",
-            "json_scheme": {
+            "type": "json_schema",
+            "json_schema": {
                 "name": model.__name__,
-                "description": model.__doc__ or f"Strict scheme for {model.__name__}",
+                "description": model.__doc__ or f"Strict schema for {model.__name__}",
                 "strict": True,
-                "scheme": clean_scheme,
+                "schema": clean_schema,
             },
         }
 
     @classmethod
-    def _make_strict(cls, scheme_node: dict[str, Any]) -> dict[str, Any]:
-        """Recursively transform a JSON scheme node to meet strict mode requirements."""
-        if not isinstance(scheme_node, dict):
-            return scheme_node
+    def _make_strict(cls, schema_node: dict[str, Any]) -> dict[str, Any]:
+        """Recursively transform a JSON schema node to meet strict mode requirements."""
+        if not isinstance(schema_node, dict):
+            return schema_node
 
-        node = scheme_node.copy()
+        node = schema_node.copy()
 
         # -------------------------------------------------------------
         # TODO (学员实战 1): 编写严苛 Schema 转换规则
