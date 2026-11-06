@@ -1,13 +1,16 @@
 import asyncio
+import logging
 
 import pytest
 
+from ai_engine.core.context import _trace_id_var as context_trace_id_var
 from ai_engine.core.lifecycle_ext import (
     DynamicMCPClusterManager,
     _trace_id_var,
     request_trace_scope,
     shielded_token_stream,
 )
+from ai_engine.core.logger import TraceIdFilter
 
 
 @pytest.mark.asyncio
@@ -72,3 +75,20 @@ async def test_shielded_billing_survives_task_cancellation() -> None:
     # 验证即使任务被 Cancel，已生成的 Token 依然成功完成了异步数据库落库！
     assert len(billing_ledger) == 1
     assert billing_ledger[0] >= 1
+
+
+@pytest.mark.asyncio
+async def test_trace_id_var_is_single_source_of_truth() -> None:
+    """验证全项目只有一个 trace_id ContextVar：作用域内写入的值必须能被日志过滤器读到"""
+    # 两个模块必须引用同一个 ContextVar 对象，否则写入与读取会分别落在两个互不相干的上下文里
+    assert _trace_id_var is context_trace_id_var
+
+    record = logging.LogRecord("ai_engine", logging.INFO, __file__, 0, "msg", None, None)
+
+    async with request_trace_scope("trace-log-001"):
+        TraceIdFilter().filter(record)
+        assert record.trace_id == "trace-log-001"
+
+    # 退出作用域后必须恢复默认值，不能把 trace 泄漏给后续请求
+    TraceIdFilter().filter(record)
+    assert record.trace_id == "system"

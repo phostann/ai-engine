@@ -1,41 +1,16 @@
 import asyncio
-import logging
 import uuid
 from collections.abc import AsyncGenerator, AsyncIterator
 from contextlib import AsyncExitStack, asynccontextmanager
-from contextvars import ContextVar
 from dataclasses import dataclass
 
+# trace_id 的唯一权威定义在 core.context: 这里只做引用, 不再重复创建 ContextVar
+# 重复定义会得到两个互不相干的 ContextVar("trace_id"), 写入的是这个, 日志读的是那个
+from ai_engine.core.context import _trace_id_var
+from ai_engine.core.logger import logger
+
+
 # ==================== 1. ContextVar 全链路异步日志染色 ====================
-_trace_id_var: ContextVar[str] = ContextVar("trace_id", default="system")
-
-
-class TraceIdLogFilter(logging.Filter):
-    """日志过滤器：自动从当前协程的 ContextVar 提取 trace_id 注入每条日志记录（对标 Spring MDC）"""
-
-    def filter(self, record: logging.LogRecord) -> bool:
-        record.trace_id = _trace_id_var.get()
-        return True
-
-
-def setup_traced_logger(name: str = "ai_engine") -> logging.Logger:
-    logger = logging.getLogger(name)
-    if not logger.handlers:
-        handler = logging.StreamHandler()
-        formatter = logging.Formatter(
-            "%(asctime)s | %(levelname)-5s | [trace:%(trace_id)s] %(message)s",
-            datefmt="%H:%M:%S",
-        )
-        handler.setFormatter(formatter)
-        handler.addFilter(TraceIdLogFilter())
-        logger.addHandler(handler)
-        logger.setLevel(logging.INFO)
-    return logger
-
-
-logger = setup_traced_logger()
-
-
 @asynccontextmanager
 async def request_trace_scope(trace_id: str | None = None) -> AsyncIterator[str]:
     """在请求入口处开启 trace_id 作用域，所有内部子协程自动继承且互不串号"""
